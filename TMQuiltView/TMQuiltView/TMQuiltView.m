@@ -430,8 +430,6 @@ NSString *const kDefaultReusableIdentifier = @"kTMQuiltViewDefaultReusableIdenti
             }
         }
         
-        
-        
         for(int j = *top; j <= *bottom; j++) {
             TMQuiltViewCell *visibleCell = (TMQuiltViewCell *)[indexPathToView objectForKey:[indexPaths objectAtIndex:j]];
             visibleCell.frame = [self rectForCellAtIndex:j column:i];
@@ -450,7 +448,6 @@ NSString *const kDefaultReusableIdentifier = @"kTMQuiltViewDefaultReusableIdenti
             (*bottom)++;
         }
         
-        
         // Add a new cell to the top if our top cell is below the top of the visible area (and not the first cell)
         while ((*top > 0) && [TMQuiltView isRect:[self rectForCellAtIndex:*top column:i] entirelyInOrBelowScrollView:self]) {
             if ([TMQuiltView isRect:[self rectForCellAtIndex:*top - 1 column:i] partiallyInScrollView:self]) {
@@ -463,19 +460,21 @@ NSString *const kDefaultReusableIdentifier = @"kTMQuiltViewDefaultReusableIdenti
             (*top)--;
         }
         
-        // Harvest any any views that have moved off screen and add them to the reuse pool
-        for (NSIndexPath* indexPath in [indexPathToView allKeys]) {
-            TMQuiltViewCell *view = [indexPathToView objectForKey:indexPath];
-            if (![TMQuiltView isRect:view.frame partiallyInScrollView:self]) { // Rect intersection?
-                [indexPathToView removeObjectForKey:indexPath];
-                // Limit the size on the reuse pool
-                if ([[self reusableViewsWithReuseIdentifier:view.reuseIdentifier] count] < 10) {
-                    [[self reusableViewsWithReuseIdentifier:view.reuseIdentifier] addObject:view];
+        if (self.contentSize.height > self.frame.size.height) {
+            // Harvest any any views that have moved off screen and add them to the reuse pool
+            for (NSIndexPath* indexPath in [indexPathToView allKeys]) {
+                TMQuiltViewCell *view = [indexPathToView objectForKey:indexPath];
+                if (![TMQuiltView isRect:view.frame partiallyInScrollView:self]) { // Rect intersection?
+                    [indexPathToView removeObjectForKey:indexPath];
+                    // Limit the size on the reuse pool
+                    if ([[self reusableViewsWithReuseIdentifier:view.reuseIdentifier] count] < 10) {
+                        [[self reusableViewsWithReuseIdentifier:view.reuseIdentifier] addObject:view];
+                    }
+                    
+                    [view removeFromSuperview];
+                    // Only harvest once per call to make things smoother
+                    //break;
                 }
-                
-                [view removeFromSuperview];
-                // Only harvest once per call to make things smoother
-                //break;
             }
         }
         
